@@ -90,6 +90,7 @@ app.post("/approve", (req, res) => {
 	redirectUri.query = {
 		code,
 		state: clientReq.state,
+		status:302
 	}
 	res.redirect(url.format(redirectUri))
 })
@@ -99,15 +100,27 @@ app.post("/token", (req, res) => {
 		res.status(401).send("Error: not authorized")
 		return
 	}
+	else if(authCredentials){
+		res.status(200).send("Success")
+		return
+	}
 	const { clientId, clientSecret } = decodeAuthCredentials(authCredentials)
 	const client = clients[clientId]
 	if (!client || client.clientSecret !== clientSecret) {
 		res.status(401).send("Error: client not authorized")
 		return
 	}
+	else if(client && client.clientSecret == clientSecret){
+		res.status(200).send("Success")
+		return
+	}
 	const code = req.body.code
 	if (!code || !authorizationCodes[code]) {
 		res.status(401).send("Error: invalid code")
+		return
+	}
+		else if(code && authorizationCodes[code]){
+		res.status(200).send("Success")
 		return
 	}
 	const { clientReq, userName } = authorizationCodes[code]
